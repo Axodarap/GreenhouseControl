@@ -1,18 +1,18 @@
 #include <Arduino.h>
+#include "Multiplexer.h"
 
-// put function declarations here:
-int myFunction(int, int);
+Multiplexer multiplexer(4, 5, 6, 7, A0);
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  Serial.begin(9600);
+  multiplexer.Init();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
-
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+  
+for(int i=1; i<17; i++){
+  Serial.print((String)multiplexer.ReadValue(i) + "\t");  
+ }
+ Serial.println();
+ delay(500);
 }
