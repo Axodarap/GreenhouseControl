@@ -1,16 +1,16 @@
-#include "Multiplexer.h"
+#include "SoilSensors.h"
 #include <arduino.h>
 
-Multiplexer::Multiplexer(int select_pin_0, int select_pin_1, int select_pin_2, int select_pin_3, int analog_pin):
+SoilSensors::SoilSensors(int select_pin_0, int select_pin_1, int select_pin_2, int select_pin_3, int analog_pin):
   select_pin_0_{select_pin_0}, select_pin_1_{select_pin_1}, select_pin_2_{select_pin_2}, select_pin_3_{select_pin_3},
   analog_pin_{analog_pin}
 {
 }
 
 /**
- * initializes multiplexer hardware
+ * initializes hardware
  */
-void Multiplexer::Init(){
+void SoilSensors::Init(){
 
   pinMode(select_pin_0_, OUTPUT);
   pinMode(select_pin_1_, OUTPUT);
@@ -20,14 +20,14 @@ void Multiplexer::Init(){
 }
 
 /**
- * Read value from one of the MUX channels
+ * Read value from one of the MUX channels and access one individual sensor
  *
- * @param selected_input MUX channel
+ * @param selected_sensor MUX channel / celected sensor
  * @return int (0-1023) - analog sensor value
  */
-int Multiplexer::ReadValue(int selected_input){   //TODO clean this Mist?
+int SoilSensors::ReadMoisture(int selected_sensor){   //TODO clean this Mist?
   
-  switch(selected_input){
+  switch(selected_sensor){
     case 1:
       digitalWrite(select_pin_0_, 0);
       digitalWrite(select_pin_1_, 0);
