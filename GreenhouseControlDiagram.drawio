@@ -1,0 +1,16 @@
+<mxfile host="app.diagrams.net" modified="2024-05-07T09:01:24.358Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" etag="ZVuQX-7hFQmEVk9tn4IE" version="24.2.7" type="device">
+  <diagram name="Page-1" id="uKJC6dWWfSScBeLbqilo">
+    <mxGraphModel dx="1900" dy="962" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="M1Jak23tMDi-eycc8SNE-1" value="Environmental Sensor 1" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="460" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="M1Jak23tMDi-eycc8SNE-2" value="Environmental Sensor 1" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="530" width="120" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

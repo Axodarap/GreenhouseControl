@@ -1,17 +1,17 @@
 #include <Arduino.h>
-#include "Multiplexer.h"
+#include "SoilSensors.h"
 
-Multiplexer multiplexer(4, 5, 6, 7, A0);
+SoilSensors soil_sensors(4, 5, 6, 7, A0);
 
 void setup() {
   Serial.begin(9600);
-  multiplexer.Init();
+  soil_sensors.Init();
 }
 
 void loop() {
   
 for(int i=1; i<17; i++){
-  Serial.print((String)multiplexer.ReadValue(i) + "\t");  
+  Serial.print((String)soil_sensors.ReadMoisture(i) + "\t");  
  }
  Serial.println();
  delay(500);

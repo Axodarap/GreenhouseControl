@@ -22,10 +22,10 @@ void SoilSensors::Init(){
 /**
  * Read value from one of the MUX channels and access one individual sensor
  *
- * @param selected_sensor MUX channel / celected sensor
+ * @param selected_sensor MUX channel / selected sensor
  * @return int (0-1023) - analog sensor value
  */
-int SoilSensors::ReadMoisture(int selected_sensor){   //TODO clean this Mist?
+int SoilSensors::GetMoisture(int selected_sensor){   //TODO clean this Mist?
   
   switch(selected_sensor){
     case 1:

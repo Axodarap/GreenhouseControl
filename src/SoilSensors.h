@@ -1,5 +1,4 @@
 #pragma once
-
 /*
 * wrapper for up to 16 soil moisture sensors using a 4 bit analog multiplexer
 *
@@ -7,15 +6,15 @@
 * Init() needs to be called prior to usage
 */
 class SoilSensors{
+  public:
+    SoilSensors(int select_pin_0, int select_pin_1, int select_pin_2, int select_pin_3, int analog_pin);
+    void Init();
+    int GetMoisture(int selected_sensor);
+
   private:
     int select_pin_0_;
     int select_pin_1_;
     int select_pin_2_;
     int select_pin_3_;
     int analog_pin_;
-
-  public:
-    SoilSensors(int select_pin_0, int select_pin_1, int select_pin_2, int select_pin_3, int analog_pin);
-    void Init();
-    int ReadMoisture(int selected_sensor);
 };
