@@ -1,6 +1,8 @@
 #include "SoilSensors.h"
 #include <arduino.h>
-
+/**
+ * constructor
+ */
 SoilSensors::SoilSensors(int select_pin_0, int select_pin_1, int select_pin_2, int select_pin_3, int analog_pin):
   select_pin_0_{select_pin_0}, select_pin_1_{select_pin_1}, select_pin_2_{select_pin_2}, select_pin_3_{select_pin_3},
   analog_pin_{analog_pin}
