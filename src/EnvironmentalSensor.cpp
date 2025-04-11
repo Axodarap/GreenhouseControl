@@ -38,7 +38,7 @@ float EnvironmentalSensor::ReadTemperature()
  */
 float EnvironmentalSensor::ReadHumidity()
 {
-    return bme_.readHumidity();
+   // return bme_.readHumidity(); //TODO -->BMP no humidity
 }
 
 /**

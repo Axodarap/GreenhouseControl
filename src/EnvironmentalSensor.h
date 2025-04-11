@@ -1,14 +1,15 @@
 #pragma once
-#include <Adafruit_BME280.h>
+#include <Adafruit_BMP280.h>
 
 /*
 * Class for environmental sensor that reads temperature, humidity and pressure
-* sensor used: BME280
+* sensor used: DHT22 (AM2302)
 *
-* 
+* NOT UPDATED YET! --> see DHTTester from adafruit library for usage
+*   
 * Init() needs to be called prior to usage
 *
-* i2c address CANNOT be set by sofware and is purely a dummy here to keep track of the one set in hardware
+* 
 *
 */
 class EnvironmentalSensor {
@@ -22,6 +23,6 @@ class EnvironmentalSensor {
 
     private:
         unsigned char i2c_address_;
-        Adafruit_BME280 bme_;
+        Adafruit_BMP280 bme_;
 
 };
