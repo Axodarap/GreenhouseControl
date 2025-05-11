@@ -1,28 +1,22 @@
 #pragma once
-#include <Adafruit_BMP280.h>
 
 /*
-* Class for environmental sensor that reads temperature, humidity and pressure
-* sensor used: DHT22 (AM2302)
+* Class for environmental sensor that reads temperature and humidity.
+* Sensor used: DHT22 (AM2302) or compatible DHT sensors.
 *
-* NOT UPDATED YET! --> see DHTTester from adafruit library for usage
-*   
-* Init() needs to be called prior to usage
-*
-* 
-*
+* Init() needs to be called prior to usage.
+* Pressure reading is not supported by DHT sensors.
 */
+
 class EnvironmentalSensor {
     public:
-        EnvironmentalSensor(unsigned char i2c_address);
-        bool Init();
-        float ReadTemperature();
-        float ReadHumidity();
-        float ReadPressure();
-        unsigned char GetAddress();
+        EnvironmentalSensor(int pin); // Constructor to initialize with GPIO pin
+        bool Init();                  // Initializes the sensor
+        float ReadTemperature();      // Reads temperature in Celsius
+        float ReadHumidity();         // Reads humidity in percentage
+        float ReadPressure();         // Returns NAN (not supported by DHT sensors)
+        int GetPin();                 // Getter for the GPIO pin
 
     private:
-        unsigned char i2c_address_;
-        Adafruit_BMP280 bme_;
-
+        int pin_;                     // GPIO pin connected to the DHT sensor
 };
