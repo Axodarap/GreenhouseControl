@@ -14,6 +14,8 @@
 // 2: Temp/Feuchte Innen/Außen
 // 8: Feuchtesensoren
 
+DHTesp dht1;
+
 //int soilsensor_pins[] = {A0, A1, A2, A3, A4, A5, A6, A7};
 int num_sensors = 8;
 int pump_pin = 13;
@@ -32,17 +34,18 @@ PumpControl pump_control(pump_pin, valve_pins, num_valves);
 
 #define SOIL_PIN 34          // Analog-Pin für Bodenfeuchte
 
+/*
 const char* ssid = "Marcell’s iPhone";
 const char* password = "b17kx09azkmjk";
 IPAddress brokerAddr(172,20,10,10);   // MQTT-Broker-IP
 const char* mqttUser = "mqtt-user";
-const char* mqttPassword = "1q2w3e4r5t";
+const char* mqttPassword = "1q2w3e4r5t";*/
 
-/*const char* ssid = "OWP-Mesh";
+const char* ssid = "OWP-Mesh";
 const char* password = "jbmaitk_106";
 IPAddress brokerAddr(192,168,68,62);   // MQTT-Broker-IP
 const char* mqttUser = "mqtt-user";
-const char* mqttPassword = "1q2w3e4r5t";*/
+const char* mqttPassword = "jbmaitk_106";
 
 WiFiClient wifiClient;
 HADevice device("Greenhouse");
@@ -74,6 +77,7 @@ void onDurationSelected(int8_t index, HASelect* sender);
 
 void setup() {
   Serial.begin(115200);
+  dht1.setup(32, DHTesp::DHT22); // Connect DHT sensor to GPIO D2
   /*
   soil_sensors.SetCalibration(1, 1023, 597);
   soil_sensors.SetCalibration(2, 1023, 597);
@@ -138,6 +142,10 @@ void loop() {
  mqtt.loop();
 
 if (millis() - lastUpdate > updateInterval) {
+
+    float h = dht1.getHumidity();
+    float t = dht1.getTemperature();
+
     int raw = 2000;
     float soilPercent = map(raw, 4095, 0, 0, 100); // Anpassen falls nötig
     for (int i = 0; i < numberSoilSensors; i++) {
@@ -147,8 +155,8 @@ if (millis() - lastUpdate > updateInterval) {
     pumpStatus.setState(pumpOn);  // zur Sicherheit aktualisieren
     lastUpdate = millis();
 
-    Serial.print("Bodenfeuchte: ");
-    Serial.print(soilPercent);
+    Serial.print("feuchte: ");
+    Serial.print(h);
     Serial.println(" %");
 }
 }
