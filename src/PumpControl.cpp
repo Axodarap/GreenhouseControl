@@ -120,7 +120,7 @@ void PumpControl::CloseAllValves() {
     }
 }
 
-void PumpControl::Update() {
+bool PumpControl::Update() {
     unsigned long current_time = millis();
 
     if (pump_state_) {
@@ -139,4 +139,16 @@ void PumpControl::Update() {
             }
         }
     }
+    return pump_state_;
+}
+
+
+void PumpControl::setPumpMaxOnTime(int max_pump_on) {
+    // Set the maximum allowed pump on time in milliseconds
+    max_pump_on_time_ = max_pump_on*1000; // 60 seconds
+}
+
+void PumpControl::setValveMaxOnTime(int max_valve_on) {
+    // Set the maximum allowed pump on time in milliseconds
+    max_valve_on_time_ = max_valve_on*1000; // 60 seconds
 }

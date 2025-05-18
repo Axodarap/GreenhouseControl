@@ -12,11 +12,12 @@ class PumpControl {
     void CloseAllValves();
     bool IsPumpOn();
     bool IsValveOpen(int valve_index);
-    void Update(); // Call this periodically to enforce maximum on times
+    bool Update(); // Call this periodically to enforce maximum on times
     void TurnPumpOnDuration(int time_on_seconds);
     void OpenValveDuration(int valve_index, int time_on_seconds);
     void EnableDebug(bool debug); // Enable or disable debug mode
-
+    void setPumpMaxOnTime(int max_pump_on);
+    void setValveMaxOnTime(int max_valve_on);
   private:
     int pump_pin_;
     int valve_pins_[16]; // Fixed-size array for up to 16 valves
