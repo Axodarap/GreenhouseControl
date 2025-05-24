@@ -3,7 +3,7 @@
 PumpControl::PumpControl(int pump_pin, const int* valve_pins, int num_valves)
   : pump_pin_(pump_pin), num_valves_(num_valves), pump_state_(false), pump_on_time_(0), pump_duration_(0),
     max_pump_on_time_(60000), max_valve_on_time_(30000), debug_(false) { // Default max times: 60s for pump, 30s for valves
-    for (int i = 0; i < num_valves_ && i < 16; i++) {
+    for (int i = 0; i < num_valves_ && i < 8; i++) {
         valve_pins_[i] = valve_pins[i];
         valve_states_[i] = false;
         valve_on_times_[i] = 0;
@@ -64,7 +64,7 @@ void PumpControl::TurnPumpOff() {
 }
 
 void PumpControl::OpenValve(int valve_index) {
-    if (valve_index >= 0 && valve_index < num_valves_ && pump_state_ == true) {
+    if (valve_index >= 0 && valve_index < num_valves_) {
         if (!valve_states_[valve_index]) {
             digitalWrite(valve_pins_[valve_index], HIGH);
             valve_states_[valve_index] = true;
@@ -76,11 +76,15 @@ void PumpControl::OpenValve(int valve_index) {
                 Serial.println(" opened.");
             }
         }
+    }else {
+        if (debug_) {
+            Serial.print("Pump is OFF - cannot open valve");
+        }
     }
 }
 
 void PumpControl::OpenValveDuration(int valve_index, int time_on_seconds) {
-    if (valve_index >= 0 && valve_index < num_valves_ && pump_state_ == true) {
+    if (valve_index >= 0 && valve_index < num_valves_) {
         if (!valve_states_[valve_index]) {
             digitalWrite(valve_pins_[valve_index], HIGH);
             valve_states_[valve_index] = true;
@@ -94,9 +98,23 @@ void PumpControl::OpenValveDuration(int valve_index, int time_on_seconds) {
                 Serial.println(" seconds.");
             }
         }
+    }else {
+        if (debug_) {
+            Serial.print("Pump is OFF - cannot open valve");
+        }
     }
 }
 
+void PumpControl::OpenAllValvesDuration(int time_on_seconds) {
+    for (int i = 0; i < num_valves_; i++) {
+        OpenValveDuration(i, time_on_seconds);
+    }
+    if (debug_) {
+        Serial.print("All valves opened for ");
+        Serial.print(time_on_seconds);
+        Serial.println(" seconds.");
+    }
+}
 void PumpControl::CloseValve(int valve_index) {
     if (valve_index >= 0 && valve_index < num_valves_) {
         digitalWrite(valve_pins_[valve_index], LOW);
@@ -151,4 +169,41 @@ void PumpControl::setPumpMaxOnTime(int max_pump_on) {
 void PumpControl::setValveMaxOnTime(int max_valve_on) {
     // Set the maximum allowed pump on time in milliseconds
     max_valve_on_time_ = max_valve_on*1000; // 60 seconds
+}
+
+// PumpControl.cpp
+bool PumpControl::GetValveState(int valve_index) const {
+    if (valve_index >= 0 && valve_index < num_valves_) {
+        return valve_states_[valve_index];
+    }
+    return false;
+}
+
+// PumpControl.cpp
+void PumpControl::SetAllValves(bool open) {
+    for (int i = 0; i < num_valves_; i++) {
+        SetValve(i, open);
+    }
+    if (debug_) {
+        Serial.println(open ? "All valves opened." : "All valves closed.");
+    }
+}
+
+
+bool PumpControl::AreAllValvesOpen() const {
+    for (int i = 0; i < num_valves_; i++) {
+        if (!valve_states_[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// PumpControl.cpp
+void PumpControl::SetValve(int valve_index, bool open) {
+    if (open) {
+        OpenValve(valve_index);
+    } else {
+        CloseValve(valve_index);
+    }
 }

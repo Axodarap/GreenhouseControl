@@ -1,5 +1,5 @@
 #pragma once
-
+#include <DHTesp.h>
 /*
 * Class for environmental sensor that reads temperature and humidity.
 * Sensor used: DHT22 (AM2302) or compatible DHT sensors.
@@ -16,6 +16,7 @@ class EnvironmentalSensor {
         float ReadHumidity();         // Reads humidity in percentage
         float ReadPressure();         // Returns NAN (not supported by DHT sensors)
         int GetPin();                 // Getter for the GPIO pin
+        DHTesp dht; // DHTesp instance for handling DHT sensor
 
     private:
         int pin_;                     // GPIO pin connected to the DHT sensor

@@ -1,8 +1,8 @@
 #include "EnvironmentalSensor.h"
-#include <DHTesp.h>
+
 
 // Globale Instanz des DHTesp-Objekts
-DHTesp dht;
+
 
 /**
  * constructor

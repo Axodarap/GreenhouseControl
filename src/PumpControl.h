@@ -18,17 +18,22 @@ class PumpControl {
     void EnableDebug(bool debug); // Enable or disable debug mode
     void setPumpMaxOnTime(int max_pump_on);
     void setValveMaxOnTime(int max_valve_on);
+    bool GetValveState(int valve_index) const;
+    void SetAllValves(bool open);
+    bool AreAllValvesOpen() const;
+    void SetValve(int valve_index, bool open);
+    void OpenAllValvesDuration(int time_on_seconds);
   private:
     int pump_pin_;
-    int valve_pins_[16]; // Fixed-size array for up to 16 valves
+    int valve_pins_[8]; // Fixed-size array for up to 16 valves
     int num_valves_;
     bool pump_state_;
-    bool valve_states_[16]; // Fixed-size array for valve states
+    bool valve_states_[8]; // Fixed-size array for valve states
 
     unsigned long pump_on_time_; // Time when the pump was turned on
     unsigned long pump_duration_; // Duration the pump should stay on
-    unsigned long valve_on_times_[16]; // Times when each valve was turned on
-    unsigned long valve_durations_[16]; // Durations each valve should stay open
+    unsigned long valve_on_times_[8]; // Times when each valve was turned on
+    unsigned long valve_durations_[8]; // Durations each valve should stay open
 
     unsigned long max_pump_on_time_; // Maximum allowed pump on time in milliseconds
     unsigned long max_valve_on_time_; // Maximum allowed valve on time in milliseconds
