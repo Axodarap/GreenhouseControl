@@ -30,16 +30,16 @@ PumpControl pump_control(pump_pin, valve_pins, num_valves);
 
 
 const char* ssid = "Marcell’s iPhone";
-const char* password = "b17kx09azkmjk";
+const char* password = "";
 IPAddress brokerAddr(172,20,10,10);   // MQTT-Broker-IP
 const char* mqttUser = "mqtt-user";
-const char* mqttPassword = "1q2w3e4r5t";
+const char* mqttPassword = "";
 
 /*const char* ssid = "OWP-Mesh";
-const char* password = "jbmaitk_106";
+const char* password = "";
 IPAddress brokerAddr(192,168,68,62);   // MQTT-Broker-IP
 const char* mqttUser = "mqtt-user";
-const char* mqttPassword = "jbmaitk_106";*/
+const char* mqttPassword = "";*/
 
 WiFiClient wifiClient;
 
