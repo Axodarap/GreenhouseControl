@@ -1,7 +1,14 @@
+//Benötigte Pins
+// 1 Pin: Pumpe, Digital IN/OUT
+// 1 Pin: FAN, Digital IN/OUT
+// 2 Pins: Fenster, Digital IN/OUT
+// 8 Pins: Ventil, Digital IN/OUT
+// 2 Pins: Temp/Feuchte Innen/Außen DHT22, Digital IN/OUT
+// 8 Pins: Feuchtesensoren, Analog IN
+
 // ===============================
 // Digital Outputs (Relais)
 // ===============================
-
 #define PIN_PUMPE         2    // Relais: Pumpe
 #define PIN_LUEFTER       4    // Relais: Lüfter
 #define PIN_FENSTER_AUF   16   // Relais: Fenster öffnen
@@ -19,14 +26,12 @@
 // ===============================
 // DHT22 Sensoren (Digital IN)
 // ===============================
-
 #define PIN_DHT_INNEN     13   // DHT22 Innen
 #define PIN_DHT_AUSSEN    14   // DHT22 Außen
 
 // ===============================
 // Bodenfeuchte-Sensoren (Analog IN)
 // ===============================
-
 #define PIN_FEUCHTE_1     32   // Feuchte Sensor 1
 #define PIN_FEUCHTE_2     33   // Feuchte Sensor 2
 #define PIN_FEUCHTE_3     34   // Feuchte Sensor 3

@@ -6,15 +6,7 @@
 #include "DHTesp.h"
 #include "ArduinoHA.h"
 #include "pin_config.h"
-
-//Mögliche Pins
-// 1 Pin: Pumpe, Digital IN/OUT
-// 1 Pin: FAN, Digital IN/OUT
-// 2 Pins: Fenster, Digital IN/OUT
-// 8 Pins: Ventil, Digital IN/OUT
-// 2 Pins: Temp/Feuchte Innen/Außen DHT22, Digital IN/OUT
-// 8 Pins: Feuchtesensoren, Analog IN
-
+#include "HomeAssistantGreenhouse.h"
 
 EnvironmentalSensor humtemp_outside(32); // DHT22 an GPIO 32
 
@@ -37,9 +29,6 @@ const int numWateringOptions = sizeof(wateringOptions) / sizeof(wateringOptions[
 PumpControl pump_control(pump_pin, valve_pins, num_valves);
 
 
-#define SOIL_PIN 34          // Analog-Pin für Bodenfeuchte
-
-
 const char* ssid = "Marcell’s iPhone";
 const char* password = "b17kx09azkmjk";
 IPAddress brokerAddr(172,20,10,10);   // MQTT-Broker-IP
@@ -53,51 +42,10 @@ const char* mqttUser = "mqtt-user";
 const char* mqttPassword = "jbmaitk_106";*/
 
 WiFiClient wifiClient;
-HADevice device("Greenhouse");
-HAMqtt mqtt(wifiClient, device);
 
-// Home Assistant Komponenten
-HASwitch pumpSwitch("greenhouse_pump");
-HABinarySensor pumpStatus("greenhouse_pump_status");
-HASwitch fanSwitch("greenhouse_fan");
+// Initialisierung der Sensoren und Pumpensteuerung
+void setupGreenhouseCallbacks(); 
 
-// Array für 8 Bodenfeuchte-Sensoren
-HASensorNumber soilSensors[8] = {
-    HASensorNumber("greenhouse_soil_moisture_1", HASensorNumber::PrecisionP0),
-    HASensorNumber("greenhouse_soil_moisture_2", HASensorNumber::PrecisionP0),
-    HASensorNumber("greenhouse_soil_moisture_3", HASensorNumber::PrecisionP0),
-    HASensorNumber("greenhouse_soil_moisture_4", HASensorNumber::PrecisionP0),
-    HASensorNumber("greenhouse_soil_moisture_5", HASensorNumber::PrecisionP0),
-    HASensorNumber("greenhouse_soil_moisture_6", HASensorNumber::PrecisionP0),
-    HASensorNumber("greenhouse_soil_moisture_7", HASensorNumber::PrecisionP0),
-    HASensorNumber("greenhouse_soil_moisture_8", HASensorNumber::PrecisionP0)
-};
-
-HASwitch valveSwitches[8] = {
-    HASwitch("greenhouse_valve_1"),
-    HASwitch("greenhouse_valve_2"),
-    HASwitch("greenhouse_valve_3"),
-    HASwitch("greenhouse_valve_4"),
-    HASwitch("greenhouse_valve_5"),
-    HASwitch("greenhouse_valve_6"),
-    HASwitch("greenhouse_valve_7"),
-    HASwitch("greenhouse_valve_8")
-};
-
-HASwitch all_valves("greenhouse_all_valves");
-
-uint8_t numberSoilSensors = sizeof(soilSensors) / sizeof(soilSensors[0]);
-uint8_t numberValves = sizeof(valveSwitches) / sizeof(valveSwitches[0]);
-
-HASelect durationSelect("watering_duration");
-
-
-void pumpSwitchCallback(bool state, HASwitch* sender);
-void onDurationSelected(int8_t index, HASelect* sender);
-void valveSwitchCallback(bool state, HASwitch* sender);
-void fanSwitchCallback(bool state, HASwitch* sender);
-
-String getWateringOptionsString();
 
 void setup() {
   Serial.begin(115200);
@@ -122,8 +70,6 @@ void setup() {
   pump_control.EnableDebug(true);
   pump_control.setPumpMaxOnTime(60); // Maximal 60 Sekunden Pumpenlaufzeit
   pump_control.setValveMaxOnTime(60); // Maximal 60 Sekunden Ventile-Offen. Macht das überhaupt Sinn?
-  pump_control.TurnPumpOnDuration(10);
-  pump_control.OpenValveDuration(0, 5);
 
   // WLAN verbinden
   WiFi.begin(ssid, password);
@@ -134,143 +80,60 @@ void setup() {
   }
   Serial.println("\nWLAN verbunden. IP: " + WiFi.localIP().toString());
 
-  // Gerätedetails
-  device.setName("ESP32-Greenhouse");
-  device.setSoftwareVersion("1.0.0");
-
-  // Konfiguration der Komponenten
-  pumpSwitch.setName("Pumpe");
-  pumpSwitch.onCommand(pumpSwitchCallback);
-
-      // Select konfigurieren
-  durationSelect.setName("Dauer");
-  durationSelect.setOptions(getWateringOptionsString().c_str());
-  durationSelect.onCommand(onDurationSelected);
-
-  pumpStatus.setName("Pumpenstatus");
-  pumpStatus.setDeviceClass("running");
-
-  // Lüfter-Schalter konfigurieren
-    fanSwitch.setName("Lüfter");
-    fanSwitch.onCommand(fanSwitchCallback);
-
-  for (int i = 0; i < numberSoilSensors; i++) {
-        char name[20];
-        snprintf(name, sizeof(name), "Bodenfeuchte_%d", i+1);
-        soilSensors[i].setName(name);
-        soilSensors[i].setUnitOfMeasurement("%");
-        soilSensors[i].setDeviceClass("humidity");
-        Serial.println(name);
-  }
-
-  for (int i = 0; i < numberValves; i++) {
-        char name[20];
-        snprintf(name, sizeof(name), "Ventil_%d", i+1);
-        valveSwitches[i].setName(name);
-        valveSwitches[i].onCommand(valveSwitchCallback);
-        Serial.println(name);
-  }
-
-  all_valves.setName("Alle Ventile");
-  all_valves.onCommand(valveSwitchCallback);
-
-  
-
-  // Komponenten registrieren
-  mqtt.begin(brokerAddr,mqttUser,mqttPassword);
-
+  GreenhouseHA::begin(brokerAddr, mqttUser, mqttPassword, "ESP32-Greenhouse", "1.0.0", wifiClient);
+  setupGreenhouseCallbacks();
 }
 
 void loop() {
  //Serial.println(millis()/1000);
- pumpOn = pump_control.Update();
+  pumpOn = pump_control.Update();
+  GreenhouseHA::loop();
 
- mqtt.loop();
+  if (millis() - lastUpdate > updateInterval) {
+      float soilPercent = map(analogRead(34), 4095, 0, 0, 100);
+      float values[8] = {soilPercent, soilPercent, soilPercent, soilPercent,
+                        soilPercent, soilPercent, soilPercent, soilPercent};
+      GreenhouseHA::publishSensors(values, 8);
 
-if (millis() - lastUpdate > updateInterval) {
-    int raw = 2000;
-    float soilPercent = map(raw, 4095, 0, 0, 100); // Anpassen falls nötig
-    for (int i = 0; i < numberSoilSensors; i++) {
-        soilSensors[i].setValue(soilPercent);
-    }
-    pumpSwitch.setState(pumpOn); 
-    pumpStatus.setState(pumpOn);  // zur Sicherheit aktualisieren
-    // Ventil-Status synchronisieren
-    for (int i = 0; i < numberValves; i++) {
-        valveSwitches[i].setState(pump_control.GetValveState(i));
-    }
-    all_valves.setState(pump_control.AreAllValvesOpen());
-    fanSwitch.setState(digitalRead(fan_pin) == HIGH);
-    lastUpdate = millis();
+      // Zustand an Home Assistant zurueckmelden
+      GreenhouseHA::setPumpState(pumpOn);
+      GreenhouseHA::setFanState(digitalRead(fan_pin) == HIGH);
+      for (int i = 0; i < 8; ++i) {
+        GreenhouseHA::setValveState(i, pump_control.GetValveState(i));
+      }
+      GreenhouseHA::setAllValvesState(pump_control.AreAllValvesOpen());
 
-    Serial.print("feuchte: ");
-    Serial.print(soilPercent);
-    Serial.println(" %");
-}
+      lastUpdate = millis();
+      Serial.printf("Feuchte: %.1f %%\n", soilPercent);
+  }
 }
 
-void pumpSwitchCallback(bool state, HASwitch* sender) {
-    Serial.print(state ? "Pumpe EIN " : "Pumpe AUS ");
-    Serial.println(state);
+void setupGreenhouseCallbacks() {
+    GreenhouseHA::onPumpCommand([](bool state) {
+        Serial.println(state ? "Pumpe EIN" : "Pumpe AUS");
+        if (state) pump_control.TurnPumpOn();
+        else pump_control.TurnPumpOff();
+    });
 
-    sender->setState(state);  // Rückmeldung an Home Assistant
-    
-    if (state) {
-      pump_control.TurnPumpOn();
-    } else {
-      pump_control.TurnPumpOff();
-    }
-}
+    GreenhouseHA::onFanCommand([](bool state) {
+        digitalWrite(fan_pin, state ? HIGH : LOW);
+        Serial.println(state ? "Luefter EIN" : "Luefter AUS");
+    });
 
-void onDurationSelected(int8_t index, HASelect* sender) {
-    if (index >= 0 && index < numWateringOptions) {
-        int wateringDurationSeconds = wateringOptions[index];
-        Serial.print("Dauer gewählt: ");
-        Serial.println(wateringDurationSeconds);
-        pump_control.TurnPumpOnDuration(wateringDurationSeconds);
-        pump_control.OpenAllValvesDuration(wateringDurationSeconds);
-    } else {
-        Serial.println("Ungültiger Index für Dauer");
-    }
-}
+    GreenhouseHA::onValveCommand([](uint8_t idx, bool state) {
+        Serial.printf("Ventil %d %s\n", idx+1, state ? "AN" : "AUS");
+        if (state) pump_control.OpenValve(idx);
+        else pump_control.CloseValve(idx);
+    });
 
-void valveSwitchCallback(bool state, HASwitch* sender) {
-    if (sender == &all_valves) {
-        // Alle Ventile schalten
+    GreenhouseHA::onAllValvesCommand([](bool state) {
         Serial.printf("Alle Ventile %s\n", state ? "AN" : "AUS");
         pump_control.SetAllValves(state);
-        sender->setState(state); // Rückmeldung für den "Alle Ventile"-Schalter
-    } else {
-        // Einzelnes Ventil schalten
-        for (int i = 0; i < numberValves; i++) {
-            if (sender == &valveSwitches[i]) {
-                Serial.printf("Ventil %d %s\n", i+1, state ? "AN" : "AUS");
-                if (state) {
-                    pump_control.OpenValve(i);
-                } else {
-                    pump_control.CloseValve(i);
-                }
-                sender->setState(state); // Rückmeldung für das einzelne Ventil
-                break;
-            }
-        }
-    }
-}
+    });
 
-// Callback für Lüfter-Schalter
-void fanSwitchCallback(bool state, HASwitch* sender) {
-    digitalWrite(fan_pin, state ? HIGH : LOW);
-    sender->setState(state); // Rückmeldung an Home Assistant
-    Serial.print("Lüfter ");
-    Serial.println(state ? "EIN" : "AUS");
-}
-
-// Hilfsfunktion, um das Options-Array als String zu erzeugen
-String getWateringOptionsString() {
-    String result;
-    for (int i = 0; i < numWateringOptions; i++) {
-        result += String(wateringOptions[i]);
-        if (i < numWateringOptions - 1) result += ";";
-    }
-    return result;
+    GreenhouseHA::onDurationSelected([](int duration) {
+        Serial.printf("Dauer gewaehlt: %d Sekunden\n", duration);
+        pump_control.TurnPumpOnDuration(duration);
+        pump_control.OpenAllValvesDuration(duration);
+    });
 }
