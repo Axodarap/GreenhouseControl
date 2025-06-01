@@ -3,7 +3,7 @@
 #define PASSWORT_H
 
 // WLAN-Zugang
-const char* WIFI_SSID     = "Dein_SSID";
+const char* WIFI_SSID     = "test";
 const char* WIFI_PASSWORD = "Dein_WLAN_Passwort";
 
 // MQTT-Zugang
