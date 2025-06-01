@@ -7,10 +7,16 @@
 #include "ArduinoHA.h"
 #include "pin_config.h"
 #include "HomeAssistantGreenhouse.h"
+#include "passwort.h"
 
 EnvironmentalSensor humtemp_outside(32); // DHT22 an GPIO 32
 
-//int soilsensor_pins[] = {A0, A1, A2, A3, A4, A5, A6, A7};
+// Array mit den drei Select-Pins (S0, S1, S2)
+int muxSelectPins[3] = {MUX_S0, MUX_S1, MUX_S2 };
+
+// SoilSensors-Objekt instanziieren
+SoilSensors soil(MUX_SIG_PIN, muxSelectPins, NUM_SOIL_SENSORS);
+
 int num_sensors = 8;
 int pump_pin = 13;
 int valve_pins[] = {16, 17, 18, 19, 20, 21, 22, 23};
@@ -29,17 +35,13 @@ const int numWateringOptions = sizeof(wateringOptions) / sizeof(wateringOptions[
 PumpControl pump_control(pump_pin, valve_pins, num_valves);
 
 
-const char* ssid = "Marcell’s iPhone";
-const char* password = "";
-IPAddress brokerAddr(172,20,10,10);   // MQTT-Broker-IP
-const char* mqttUser = "mqtt-user";
-const char* mqttPassword = "";
+const char* ssid = WIFI_SSID;
+const char* password = WIFI_PASSWORD;
+IPAddress brokerAddr(172,20,10,10);   // Studgard
+//IPAddress brokerAddr(192,168,68,62);   // Huedde
+const char* mqttUser = MQTT_USER;
+const char* mqttPassword = MQTT_PASSWORD;
 
-/*const char* ssid = "OWP-Mesh";
-const char* password = "";
-IPAddress brokerAddr(192,168,68,62);   // MQTT-Broker-IP
-const char* mqttUser = "mqtt-user";
-const char* mqttPassword = "";*/
 
 WiFiClient wifiClient;
 
@@ -50,7 +52,7 @@ void setupGreenhouseCallbacks();
 void setup() {
   Serial.begin(115200);
   humtemp_outside.Init();
-
+  soil.Init();
   /*
   soil_sensors.SetCalibration(1, 1023, 597);
   soil_sensors.SetCalibration(2, 1023, 597);
@@ -90,10 +92,14 @@ void loop() {
   GreenhouseHA::loop();
 
   if (millis() - lastUpdate > updateInterval) {
-      float soilPercent = map(analogRead(34), 4095, 0, 0, 100);
-      float values[8] = {soilPercent, soilPercent, soilPercent, soilPercent,
-                        soilPercent, soilPercent, soilPercent, soilPercent};
-      GreenhouseHA::publishSensors(values, 8);
+      float values_soilsensor[8] = {0};
+      for (int i = 1; i <= NUM_SOIL_SENSORS; i++) {
+        values_soilsensor[i] = soil.GetMoisturePercent(i);  // Roh → Filter → Prozent
+        Serial.printf("Sensor %d: Feuchte=%3d%%\n", i, values_soilsensor[i]);
+        delay(50);
+      }
+
+      GreenhouseHA::publishSensors(values_soilsensor, 8);
 
       // Zustand an Home Assistant zurueckmelden
       GreenhouseHA::setPumpState(pumpOn);
@@ -104,7 +110,7 @@ void loop() {
       GreenhouseHA::setAllValvesState(pump_control.AreAllValvesOpen());
 
       lastUpdate = millis();
-      Serial.printf("Feuchte: %.1f %%\n", soilPercent);
+      Serial.printf("Update ");
   }
 }
 
