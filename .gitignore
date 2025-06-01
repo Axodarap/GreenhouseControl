@@ -5,4 +5,4 @@
 .vscode/ipch
 
 # Sensible Zugangsdaten
-src/passwort.h
+/src/passwort.h
