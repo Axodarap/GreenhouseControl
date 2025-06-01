@@ -1,27 +1,23 @@
 #pragma once
-#include <Adafruit_BME280.h>
-
+#include <DHTesp.h>
 /*
-* Class for environmental sensor that reads temperature, humidity and pressure
-* sensor used: BME280
+* Class for environmental sensor that reads temperature and humidity.
+* Sensor used: DHT22 (AM2302) or compatible DHT sensors.
 *
-* 
-* Init() needs to be called prior to usage
-*
-* i2c address CANNOT be set by sofware and is purely a dummy here to keep track of the one set in hardware
-*
+* Init() needs to be called prior to usage.
+* Pressure reading is not supported by DHT sensors.
 */
+
 class EnvironmentalSensor {
     public:
-        EnvironmentalSensor(unsigned char i2c_address);
-        bool Init();
-        float ReadTemperature();
-        float ReadHumidity();
-        float ReadPressure();
-        unsigned char GetAddress();
+        EnvironmentalSensor(int pin); // Constructor to initialize with GPIO pin
+        bool Init();                  // Initializes the sensor
+        float ReadTemperature();      // Reads temperature in Celsius
+        float ReadHumidity();         // Reads humidity in percentage
+        float ReadPressure();         // Returns NAN (not supported by DHT sensors)
+        int GetPin();                 // Getter for the GPIO pin
+        DHTesp dht; // DHTesp instance for handling DHT sensor
 
     private:
-        unsigned char i2c_address_;
-        Adafruit_BME280 bme_;
-
+        int pin_;                     // GPIO pin connected to the DHT sensor
 };

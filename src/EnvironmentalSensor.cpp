@@ -1,24 +1,25 @@
 #include "EnvironmentalSensor.h"
 
+
+// Globale Instanz des DHTesp-Objekts
+
+
 /**
  * constructor
  */
-EnvironmentalSensor::EnvironmentalSensor(unsigned char i2c_address):i2c_address_{i2c_address}
+EnvironmentalSensor::EnvironmentalSensor(int pin): pin_{pin}
 {
 }
 
 /**
  * initializes hardware
  * 
- * @return bool - true if sensor is found, false if not
+ * @return bool - true if sensor is initialized successfully, false otherwise
  */
 bool EnvironmentalSensor::Init()
 {
-    if (!bme_.begin(i2c_address_)) 
-    {  
-        return false;   //sensor not found
-    }
-    return true;    //sensor found
+    dht.setup(pin_, DHTesp::DHT22); // DHT22 als Standardtyp, anpassbar
+    return dht.getStatus() == DHTesp::ERROR_NONE;
 }
 
 /**
@@ -28,7 +29,11 @@ bool EnvironmentalSensor::Init()
  */
 float EnvironmentalSensor::ReadTemperature()
 {
-    return bme_.readTemperature();
+    TempAndHumidity data = dht.getTempAndHumidity();
+    if (dht.getStatus() != DHTesp::ERROR_NONE) {
+        return NAN; // Fehlerfall: Rückgabe von NaN
+    }
+    return data.temperature;
 }
 
 /**
@@ -38,7 +43,11 @@ float EnvironmentalSensor::ReadTemperature()
  */
 float EnvironmentalSensor::ReadHumidity()
 {
-    return bme_.readHumidity();
+    TempAndHumidity data = dht.getTempAndHumidity();
+    if (dht.getStatus() != DHTesp::ERROR_NONE) {
+        return NAN; // Fehlerfall: Rückgabe von NaN
+    }
+    return data.humidity;
 }
 
 /**
@@ -48,15 +57,16 @@ float EnvironmentalSensor::ReadHumidity()
  */
 float EnvironmentalSensor::ReadPressure()
 {
-    return bme_.readPressure();
+    // DHT-Sensoren messen keinen Druck
+    return NAN; // Rückgabe von NaN, da nicht unterstützt
 }
 
 /**
- * getter for i2c_address_
+ * getter for pin_
  * 
- * @return unsigned char - i2c address
+ * @return int - GPIO-Pin
  */
-unsigned char EnvironmentalSensor::GetAddress()
+int EnvironmentalSensor::GetPin()
 {
-    return i2c_address_;
+    return pin_;
 }
