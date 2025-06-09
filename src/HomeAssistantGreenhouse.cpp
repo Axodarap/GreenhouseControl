@@ -22,6 +22,9 @@ HASensorNumber _soilSensors[8] = {
     HASensorNumber("greenhouse_soil_7", HASensorNumber::PrecisionP0), HASensorNumber("greenhouse_soil_8", HASensorNumber::PrecisionP0)
 };
 
+HASensorNumber _humSensor_Outside("HumOutside", HASensorNumber::PrecisionP1);
+HASensorNumber _tempSensor_Outside("TempOutside", HASensorNumber::PrecisionP1);
+
 constexpr int wateringOptions[] = {30, 60, 90, 120, 180};
 constexpr size_t numWateringOptions = sizeof(wateringOptions) / sizeof(wateringOptions[0]);
 
@@ -62,6 +65,12 @@ void begin(IPAddress broker, const char* user, const char* pass,
     _pumpStatus.setDeviceClass("running");
     _fanSwitch.setName("Luefter");
     _allValves.setName("Alle Ventile");
+    _humSensor_Outside.setName("Aussen Luftfeuchte");
+    _humSensor_Outside.setUnitOfMeasurement("%");
+    _humSensor_Outside.setDeviceClass("humidity");
+    _tempSensor_Outside.setName("Aussen Temperatur");  
+    _tempSensor_Outside.setUnitOfMeasurement("°C");
+    _tempSensor_Outside.setDeviceClass("temperature");
 
     _durationSelect.setName("Dauer");
     _durationSelect.setOptions(getWateringOptionsString().c_str());
@@ -109,10 +118,12 @@ void loop() {
     if (_mqtt) _mqtt->loop();
 }
 
-void publishSensors(float soilValues[], size_t count) {
+void publishSensors(float soilValues[], size_t count, float hum_outside,float temp_outside) {
     for (size_t i = 0; i < count && i < 8; ++i) {
         _soilSensors[i].setValue(soilValues[i]);
     }
+    _humSensor_Outside.setValue(hum_outside);
+    _tempSensor_Outside.setValue(temp_outside);
 }
 
 void setPumpState(bool state) {

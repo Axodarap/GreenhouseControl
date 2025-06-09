@@ -26,7 +26,7 @@ PumpControl pump_control(
   NUM_VENTILE
 );
 
-bool pumpOn = false;
+bool pumpOn = true;
 unsigned long lastUpdate = 0;
 const unsigned long updateInterval = 3000;
 
@@ -37,8 +37,8 @@ const int fan_pin = PIN_LUEFTER;
 // WLAN- und MQTT-Konfiguration
 const char* ssid = WIFI_SSID;
 const char* password = WIFI_PASSWORD;
-IPAddress brokerAddr(172,20,10,10);   // Studgard
-//IPAddress brokerAddr(192,168,68,62);   // Huedde
+//IPAddress brokerAddr(172,20,10,10);   // Studgard
+IPAddress brokerAddr(192,168,68,62);   // Huedde
 const char* mqttUser = MQTT_USER;
 const char* mqttPassword = MQTT_PASSWORD;
 
@@ -98,17 +98,20 @@ void loop() {
 
   if (millis() - lastUpdate > updateInterval) {
     
+    float temperature = humtemp_outside.ReadTemperature();
+    float humidity = humtemp_outside.ReadHumidity();
     float values_soilsensor[NUM_SOIL_SENSORS] = {0};
 
     // 1. Alle Feuchtesensoren (1…NUM_SOIL_SENSORS) auslesen
     for (int i = 1; i <= NUM_SOIL_SENSORS; i++) {
-      int pct = soil.GetMoisturePercent(i);
+      //int pct = soil.GetMoisturePercent(i);
+      int pct = 53;
       values_soilsensor[i - 1] = pct;
-      Serial.printf("Sensor %d: Feuchte=%3d%%\n", i, pct);
+      //Serial.printf("Sensor %d: Feuchte=%3d%%\n", i, pct);
       delay(50);
     }
 
-    GreenhouseHA::publishSensors(values_soilsensor, 8);
+    GreenhouseHA::publishSensors(values_soilsensor, 8, humidity, temperature);
 
     // Zustand an Home Assistant zurueckmelden
     GreenhouseHA::setPumpState(pumpOn);
@@ -119,7 +122,7 @@ void loop() {
     GreenhouseHA::setAllValvesState(pump_control.AreAllValvesOpen());
 
     lastUpdate = millis();
-    Serial.printf("Update ");
+    Serial.printf("Update %0.2f \n",humidity);
   }
 }
 

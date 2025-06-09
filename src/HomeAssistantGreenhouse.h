@@ -16,7 +16,7 @@ void begin(IPAddress broker, const char* user, const char* pass,
            WiFiClient& client);
 
 void loop();
-void publishSensors(float soilValues[], size_t count);
+void publishSensors(float soilValues[], size_t count, float hum_outside,float temp_outside);
 void setPumpState(bool state);
 void setFanState(bool state);
 void setValveState(uint8_t index, bool state);

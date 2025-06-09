@@ -29,14 +29,14 @@
 // DHT22 Sensoren (Digital IN)
 // ===============================
 #define PIN_DHT_INNEN     13  // DHT22 Innen
-#define PIN_DHT_AUSSEN    32  // Eigentlich 14 aber dawal is 32 anglötet DHT22 Außen
+#define PIN_DHT_AUSSEN    14  // Eigentlich 14 anglötet DHT22 Außen
 
 // ===============================
 // Bodenfeuchte-Sensoren (8 Kanäle über CD74HC4067)
 // ===============================
-// CD74HC4067: S0→32, S1→33, S2→5, (S3=GND, E=GND), Z→34; Y0…Y7 → Sensoren
+// CD74HC4067: S0→32, S1→33, S2→5, (S3=GND, EN=GND), Z→34; Y0…Y7 → Sensoren
 
-#define MUX_S0            14  // 32 eigenltich CD74HC4067 S0 → GPIO32
+#define MUX_S0            32  //  S0 → GPIO32
 #define MUX_S1            33  // CD74HC4067 S1 → GPIO33
 #define MUX_S2             5  // CD74HC4067 S2 → GPIO5
 #define MUX_SIG_PIN       34  // CD74HC4067 Z  → GPIO34 (ADC)
